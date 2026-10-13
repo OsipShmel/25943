@@ -9,6 +9,30 @@ struct node {
     struct node *next;
 };
 
+static void clean(char *s){
+    char *d =s;
+   while(*s){
+    if(*s == '\033'){
+	s++;
+	if(*s=='[' || *s=='O'){
+	s++;
+	while(*s && (*s<0x40 || 0x7e)) s++;
+	if(*s) s++;
+}
+	else if(*s){
+	s++;
+}
+	else if(iscntrl(unsigned char)*s && *s!='\n' && *s!='\t'){
+	s++;
+}
+	else{
+	*d++ = *s++;
+}
+}
+	*d = '\0';
+}
+
+
 int main(void)
 {
     char buf[MAXLINE];
