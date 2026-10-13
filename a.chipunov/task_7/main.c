@@ -18,8 +18,8 @@ static void on_alarm(int sig)
 
 int main(int argc, char *argv[])
 {
-    long offs[MAXLINES];    /* line start offsets */
-    int lens[MAXLINES];     /* line lengths without '\n' */
+    long offs[MAXLINES]; 
+    int lens[MAXLINES];
     int n = 0, i, num, r, first = 1;
     long start = 0, size, k;
     char *map;
@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
         perror("mmap");
         return 1;
     }
-    close(fd);  /* mapping stays valid */
+    close(fd); 
 
-    /* build table */
+   
     for (k = 0; k < size && n < MAXLINES; k++) {
         if (map[k] == '\n') {
             offs[n] = start;
@@ -62,19 +62,19 @@ int main(int argc, char *argv[])
             start = k + 1;
         }
     }
-    /* last line without '\n' */
+    
     if (n < MAXLINES && start < size) {
         offs[n] = start;
         lens[n] = size - start;
         n++;
     }
 
-    /* debug: print table */
+    //print table
     printf("line\toffset\tlength\n");
     for (i = 0; i < n; i++)
         printf("%d\t%ld\t%d\n", i + 1, offs[i], lens[i]);
 
-    /* no SA_RESTART: alarm interrupts scanf */
+   
     sa.sa_handler = on_alarm;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         if (r != 1) {
             if (feof(stdin))
                 break;
-            scanf("%*s");   /* skip bad input */
+            scanf("%*s"); 
             printf("bad input\n");
             continue;
         }

@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
         printf("Line number (5 sec): ");
         fflush(stdout);
 
-        
-         alarm(5);
+	if(first) alarm(5);
+
         if (scanf("%d", &num) != 1) {
             alarm(0);
             if (feof(stdin))

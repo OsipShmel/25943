@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <ulimit.h>
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/resource.h>
@@ -71,15 +70,36 @@ int main(int argc, char *argv[])
             printf("pid=%ld ppid=%ld pgid=%ld\n",
                    (long)getpid(), (long)getppid(), (long)getpgrp());
             break;
-        case 'u':
-            printf("ulimit=%ld\n", ulimit(UL_GETFSIZE, 0));
+        case 'u':   /* max user processes */
+#ifdef RLIMIT_NPROC
+            if (getrlimit(RLIMIT_NPROC, &rl) == -1)
+                perror("getrlimit");
+            else if (rl.rlim_cur == RLIM_INFINITY)
+                printf("max processes=unlimited\n");
+            else
+                printf("max processes=%lu\n", (unsigned long)rl.rlim_cur);
+#else
+            printf("max processes=%ld\n", sysconf(_SC_CHILD_MAX));
+#endif
             break;
         case 'U':
             v = parse_num(args[i]);
-            if (v == -1)
+            if (v == -1) {
                 fprintf(stderr, "bad ulimit value: %s\n", args[i]);
-            else if (ulimit(UL_SETFSIZE, v) == -1)
-                perror("ulimit");
+                break;
+            }
+#ifdef RLIMIT_NPROC
+            if (getrlimit(RLIMIT_NPROC, &rl) == -1) {
+                perror("getrlimit");
+                break;
+            }
+            rl.rlim_cur = v;
+            if (setrlimit(RLIMIT_NPROC, &rl) == -1)
+                perror("setrlimit");
+#else
+            /* Solaris: no per-process limit on processes */
+            fprintf(stderr, "cannot change max processes on this system\n");
+#endif
             break;
         case 'c':
             if (getrlimit(RLIMIT_CORE, &rl) == -1)
